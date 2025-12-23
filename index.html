@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Database Schema ERD</title>
+  <title>Database Schema ERD - Complete</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -28,69 +28,96 @@
       ai: { header: '#4f46e5', light: '#e0e7ff' }
     };
 
+    // EXACT SCHEMA FROM USER'S SQL FILE
     const tables = {
+      // ==================== CORE ====================
       organizations: { domain: 'core', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'text' },
         { name: 'created_at', type: 'timestamptz' }
       ]},
+      
       sites: { domain: 'core', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'text' },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'created_at', type: 'timestamptz' }
       ]},
+      
       users: { domain: 'core', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'email', type: 'text' },
         { name: 'name', type: 'text' },
         { name: 'role', type: 'text' },
-        { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'role_id', type: 'uuid', isFK: true },
-        { name: 'status', type: 'varchar' }
+        { name: 'organization_id', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'status', type: 'varchar' },
+        { name: 'role_id', type: 'uuid', isFK: true }
       ]},
+      
       user_organizations: { domain: 'core', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'user_id', type: 'uuid', isFK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
-        { name: 'is_primary', type: 'bool' }
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'is_primary', type: 'boolean' }
       ]},
+      
       user_sites: { domain: 'core', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'user_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'is_primary', type: 'bool' }
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'is_primary', type: 'boolean' }
       ]},
+
+      // ==================== RBAC ====================
       roles: { domain: 'rbac', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'varchar', isUnique: true },
         { name: 'description', type: 'text' },
-        { name: 'is_system', type: 'bool' }
+        { name: 'is_system', type: 'boolean' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       role_permissions: { domain: 'rbac', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'role_id', type: 'uuid', isFK: true },
         { name: 'resource_type', type: 'varchar' },
+        { name: 'resource_id', type: 'varchar' },
         { name: 'action', type: 'varchar' },
+        { name: 'conditions', type: 'jsonb' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'priority', type: 'integer' },
         { name: 'scope', type: 'text' }
       ]},
+
+      // ==================== CHAT ====================
       chat_sessions: { domain: 'chat', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'title', type: 'text' },
-        { name: 'is_active', type: 'bool' },
+        { name: 'is_active', type: 'boolean' },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       chat_messages: { domain: 'chat', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'session_id', type: 'uuid', isFK: true },
         { name: 'sender_type', type: 'text' },
         { name: 'content', type: 'text' },
         { name: 'query_id', type: 'uuid', isFK: true },
-        { name: 'widget_id', type: 'uuid', isFK: true }
+        { name: 'widget_id', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' }
       ]},
+
+      // ==================== DATABASE ====================
       database_connections: { domain: 'database', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'varchar' },
@@ -98,104 +125,195 @@
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
         { name: 'details', type: 'jsonb' },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'function_name', type: 'varchar' },
+        { name: 'function_definition', type: 'text' },
+        { name: 'function_parameters', type: 'jsonb' },
+        { name: 'is_function_enabled', type: 'boolean' },
+        { name: 'last_deployed', type: 'timestamptz' }
       ]},
+      
       database_table_access: { domain: 'database', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'connection_id', type: 'uuid', isFK: true },
         { name: 'table_name', type: 'text' },
         { name: 'schema_name', type: 'text' },
-        { name: 'has_access', type: 'bool' }
+        { name: 'has_access', type: 'boolean' },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+
+      // ==================== QUERY ====================
       contexts: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
-        { name: 'name', type: 'varchar' },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
         { name: 'content', type: 'text' },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'name', type: 'varchar' }
       ]},
+      
       context_chunks: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'context_id', type: 'uuid', isFK: true },
         { name: 'content', type: 'text' },
-        { name: 'order_index', type: 'int4' }
+        { name: 'order_index', type: 'integer' },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       sql_queries: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'user_id', type: 'uuid', isFK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
         { name: 'connection_id', type: 'uuid', isFK: true },
-        { name: 'context_id', type: 'uuid', isFK: true },
         { name: 'original_question', type: 'text' },
-        { name: 'status', type: 'varchar' }
+        { name: 'enhanced_question', type: 'text' },
+        { name: 'context_id', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'completed_at', type: 'timestamptz' },
+        { name: 'status', type: 'varchar' },
+        { name: 'total_attempts', type: 'integer' },
+        { name: 'successful_attempt_number', type: 'integer' },
+        { name: 'total_tokens_used', type: 'integer' },
+        { name: 'question_intent', type: 'text' },
+        { name: 'insights', type: 'text' },
+        { name: 'tables_used', type: 'array' },
+        { name: 'insights_token_usage', type: 'integer' },
+        { name: 'insights_generated', type: 'boolean' }
       ]},
+      
       sql_query_attempts: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'query_id', type: 'uuid', isFK: true },
-        { name: 'attempt_number', type: 'int4' },
+        { name: 'attempt_number', type: 'integer' },
         { name: 'generated_sql', type: 'text' },
-        { name: 'has_results', type: 'bool' }
+        { name: 'prompt_used', type: 'text' },
+        { name: 'special_instructions', type: 'text' },
+        { name: 'has_results', type: 'boolean' },
+        { name: 'result_data', type: 'jsonb' },
+        { name: 'error_message', type: 'text' },
+        { name: 'execution_time_ms', type: 'integer' },
+        { name: 'prompt_tokens', type: 'integer' },
+        { name: 'completion_tokens', type: 'integer' },
+        { name: 'total_tokens', type: 'integer' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'reasoning', type: 'text' }
       ]},
+      
       sql_query_feedback: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'query_id', type: 'uuid', isFK: true },
         { name: 'user_id', type: 'uuid', isFK: true },
-        { name: 'feedback_type', type: 'text' }
+        { name: 'feedback_type', type: 'text' },
+        { name: 'feedback_text', type: 'text' },
+        { name: 'corrected_sql', type: 'text' },
+        { name: 'created_at', type: 'timestamptz' }
       ]},
+      
       sql_usage_metrics: { domain: 'query', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'user_id', type: 'uuid', isFK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'query_count', type: 'int4' },
-        { name: 'year', type: 'int4' }
+        { name: 'year', type: 'integer' },
+        { name: 'month', type: 'integer' },
+        { name: 'day', type: 'integer' },
+        { name: 'query_count', type: 'integer' },
+        { name: 'successful_query_count', type: 'integer' },
+        { name: 'failed_query_count', type: 'integer' },
+        { name: 'total_tokens_used', type: 'integer' },
+        { name: 'estimated_cost', type: 'numeric' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+
+      // ==================== DASHBOARD ====================
       dashboards: { domain: 'dashboard', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'text' },
         { name: 'description', type: 'text' },
+        { name: 'layout_config', type: 'jsonb' },
+        { name: 'is_default', type: 'boolean' },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'layout_config', type: 'jsonb' },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       widgets: { domain: 'dashboard', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'text' },
+        { name: 'description', type: 'text' },
         { name: 'type', type: 'text' },
+        { name: 'config', type: 'jsonb' },
+        { name: 'chart_code', type: 'text' },
+        { name: 'query_id', type: 'uuid', isFK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'config', type: 'jsonb' },
-        { name: 'query_id', type: 'uuid', isFK: true },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'insights', type: 'jsonb' },
         { name: 'session_id', type: 'uuid', isFK: true },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'default_config', type: 'jsonb' }
       ]},
+      
       dashboard_widgets: { domain: 'dashboard', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'dashboard_id', type: 'uuid', isFK: true },
         { name: 'widget_id', type: 'uuid', isFK: true },
+        { name: 'position_x', type: 'integer' },
+        { name: 'position_y', type: 'integer' },
+        { name: 'width', type: 'integer' },
+        { name: 'height', type: 'integer' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
         { name: 'organization_id', type: 'uuid', isFK: true },
-        { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'position_x', type: 'int4' },
-        { name: 'position_y', type: 'int4' }
+        { name: 'site_id', type: 'uuid', isFK: true }
       ]},
+
+      // ==================== PLAYLIST ====================
       playlists: { domain: 'playlist', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'name', type: 'text' },
+        { name: 'description', type: 'text' },
+        { name: 'share_token', type: 'text', isUnique: true },
+        { name: 'is_public', type: 'boolean' },
+        { name: 'auto_scroll', type: 'boolean' },
+        { name: 'scroll_speed', type: 'integer' },
+        { name: 'scroll_direction', type: 'text' },
+        { name: 'refresh_interval', type: 'integer' },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
-        { name: 'share_token', type: 'text', isUnique: true },
-        { name: 'is_public', type: 'bool' },
-        { name: 'created_by', type: 'uuid', isFK: true }
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'is_locked', type: 'boolean' }
       ]},
+      
       playlist_dashboards: { domain: 'playlist', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'playlist_id', type: 'uuid', isFK: true },
         { name: 'dashboard_id', type: 'uuid', isFK: true },
-        { name: 'order_index', type: 'int4' }
+        { name: 'order_index', type: 'integer' },
+        { name: 'scroll_duration', type: 'integer' },
+        { name: 'is_enabled', type: 'boolean' },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' },
+        { name: 'transition_effect', type: 'text' },
+        { name: 'transition_duration', type: 'integer' }
       ]},
+
+      // ==================== AI ====================
       llm_configurations: { domain: 'ai', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
@@ -203,113 +321,152 @@
         { name: 'provider', type: 'varchar' },
         { name: 'model', type: 'varchar' },
         { name: 'api_key', type: 'text' },
-        { name: 'is_default', type: 'bool' }
+        { name: 'parameters', type: 'jsonb' },
+        { name: 'is_default', type: 'boolean' },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       schema_vector_stores: { domain: 'ai', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'organization_id', type: 'uuid', isFK: true },
         { name: 'site_id', type: 'uuid', isFK: true },
         { name: 'connection_id', type: 'uuid', isFK: true },
         { name: 'store_name', type: 'text' },
-        { name: 'model_name', type: 'text' }
+        { name: 'chunk_count', type: 'integer' },
+        { name: 'table_count', type: 'integer' },
+        { name: 'column_count', type: 'integer' },
+        { name: 'model_name', type: 'text' },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]},
+      
       schema_vectors: { domain: 'ai', columns: [
         { name: 'id', type: 'uuid', isPK: true },
         { name: 'vector_store_id', type: 'uuid', isFK: true },
         { name: 'table_name', type: 'text' },
-        { name: 'chunk_text', type: 'text' }
+        { name: 'column_name', type: 'text' },
+        { name: 'vector_data', type: 'vector' },
+        { name: 'chunk_text', type: 'text' },
+        { name: 'metadata', type: 'jsonb' },
+        { name: 'created_by', type: 'uuid', isFK: true },
+        { name: 'created_at', type: 'timestamptz' },
+        { name: 'updated_at', type: 'timestamptz' }
       ]}
     };
 
+    // ALL RELATIONSHIPS FROM SQL CONSTRAINTS
     const relationships = [
+      // sites
       { from: 'sites', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
+      // users
       { from: 'users', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'users', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'users', fromCol: 'role_id', to: 'roles', toCol: 'id', type: 'domain' },
+      // user_organizations
       { from: 'user_organizations', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
+      // user_sites
       { from: 'user_sites', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
+      // role_permissions
       { from: 'role_permissions', fromCol: 'role_id', to: 'roles', toCol: 'id', type: 'domain' },
+      // chat_sessions
       { from: 'chat_sessions', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'chat_sessions', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'chat_sessions', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // chat_messages
       { from: 'chat_messages', fromCol: 'session_id', to: 'chat_sessions', toCol: 'id', type: 'domain' },
       { from: 'chat_messages', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
       { from: 'chat_messages', fromCol: 'widget_id', to: 'widgets', toCol: 'id', type: 'domain' },
+      // database_connections
       { from: 'database_connections', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'database_connections', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'database_connections', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // database_table_access
       { from: 'database_table_access', fromCol: 'connection_id', to: 'database_connections', toCol: 'id', type: 'domain' },
+      // contexts
       { from: 'contexts', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'contexts', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
-      { from: 'contexts', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // context_chunks
       { from: 'context_chunks', fromCol: 'context_id', to: 'contexts', toCol: 'id', type: 'domain' },
+      // sql_queries
+      { from: 'sql_queries', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'sql_queries', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'sql_queries', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
-      { from: 'sql_queries', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'sql_queries', fromCol: 'connection_id', to: 'database_connections', toCol: 'id', type: 'domain' },
       { from: 'sql_queries', fromCol: 'context_id', to: 'contexts', toCol: 'id', type: 'domain' },
+      // sql_query_attempts
       { from: 'sql_query_attempts', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
+      // sql_query_feedback
       { from: 'sql_query_feedback', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
-      { from: 'sql_query_feedback', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
+      // sql_usage_metrics
+      { from: 'sql_usage_metrics', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'sql_usage_metrics', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'sql_usage_metrics', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
-      { from: 'sql_usage_metrics', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
+      // dashboards
       { from: 'dashboards', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'dashboards', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'dashboards', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // widgets
+      { from: 'widgets', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
       { from: 'widgets', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'widgets', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'widgets', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
-      { from: 'widgets', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
       { from: 'widgets', fromCol: 'session_id', to: 'chat_sessions', toCol: 'id', type: 'domain' },
-      { from: 'dashboard_widgets', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
-      { from: 'dashboard_widgets', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
+      // dashboard_widgets
       { from: 'dashboard_widgets', fromCol: 'dashboard_id', to: 'dashboards', toCol: 'id', type: 'domain' },
       { from: 'dashboard_widgets', fromCol: 'widget_id', to: 'widgets', toCol: 'id', type: 'domain' },
+      // playlists
       { from: 'playlists', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'playlists', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
-      { from: 'playlists', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // playlist_dashboards
       { from: 'playlist_dashboards', fromCol: 'playlist_id', to: 'playlists', toCol: 'id', type: 'domain' },
       { from: 'playlist_dashboards', fromCol: 'dashboard_id', to: 'dashboards', toCol: 'id', type: 'domain' },
+      // llm_configurations
       { from: 'llm_configurations', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'llm_configurations', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
+      { from: 'llm_configurations', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
+      // schema_vector_stores
       { from: 'schema_vector_stores', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'schema_vector_stores', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'schema_vector_stores', fromCol: 'connection_id', to: 'database_connections', toCol: 'id', type: 'domain' },
+      // schema_vectors
       { from: 'schema_vectors', fromCol: 'vector_store_id', to: 'schema_vector_stores', toCol: 'id', type: 'domain' },
     ];
 
+    // Positions optimized for the schema
     const initialPositions = {
-      organizations: { x: 700, y: 60 },
-      sites: { x: 950, y: 60 },
-      users: { x: 1200, y: 60 },
-      roles: { x: 1450, y: 60 },
-      role_permissions: { x: 1700, y: 60 },
-      user_organizations: { x: 700, y: 280 },
-      user_sites: { x: 950, y: 280 },
-      chat_sessions: { x: 1450, y: 280 },
-      chat_messages: { x: 1700, y: 280 },
-      database_connections: { x: 60, y: 280 },
-      database_table_access: { x: 60, y: 520 },
-      contexts: { x: 300, y: 280 },
-      context_chunks: { x: 300, y: 520 },
-      sql_queries: { x: 540, y: 520 },
-      sql_query_attempts: { x: 300, y: 760 },
-      sql_query_feedback: { x: 540, y: 760 },
-      sql_usage_metrics: { x: 780, y: 760 },
-      dashboards: { x: 1020, y: 520 },
-      widgets: { x: 1260, y: 520 },
-      dashboard_widgets: { x: 1140, y: 760 },
-      playlists: { x: 1500, y: 520 },
-      playlist_dashboards: { x: 1380, y: 760 },
-      llm_configurations: { x: 60, y: 760 },
-      schema_vector_stores: { x: 60, y: 980 },
-      schema_vectors: { x: 300, y: 980 },
+      organizations: { x: 850, y: 50 },
+      sites: { x: 1100, y: 50 },
+      users: { x: 1350, y: 50 },
+      roles: { x: 1650, y: 50 },
+      role_permissions: { x: 1900, y: 50 },
+      user_organizations: { x: 850, y: 320 },
+      user_sites: { x: 1100, y: 320 },
+      chat_sessions: { x: 1650, y: 320 },
+      chat_messages: { x: 1900, y: 320 },
+      database_connections: { x: 50, y: 50 },
+      database_table_access: { x: 50, y: 480 },
+      contexts: { x: 320, y: 50 },
+      context_chunks: { x: 320, y: 320 },
+      sql_queries: { x: 550, y: 320 },
+      sql_query_attempts: { x: 320, y: 700 },
+      sql_query_feedback: { x: 600, y: 700 },
+      sql_usage_metrics: { x: 880, y: 700 },
+      dashboards: { x: 1160, y: 580 },
+      widgets: { x: 1430, y: 580 },
+      dashboard_widgets: { x: 1160, y: 950 },
+      playlists: { x: 1700, y: 580 },
+      playlist_dashboards: { x: 1700, y: 950 },
+      llm_configurations: { x: 50, y: 700 },
+      schema_vector_stores: { x: 50, y: 1000 },
+      schema_vectors: { x: 330, y: 1000 },
     };
 
-    const TABLE_WIDTH = 200;
-    const ROW_HEIGHT = 26;
-    const HEADER_HEIGHT = 36;
+    const TABLE_WIDTH = 230;
+    const ROW_HEIGHT = 22;
+    const HEADER_HEIGHT = 34;
 
     const TableCard = ({ name, data, position, onDrag, isHighlighted, highlightedCols, onMouseEnter, onMouseLeave }) => {
       const [isDragging, setIsDragging] = useState(false);
@@ -351,7 +508,7 @@
             borderRadius: '8px',
             boxShadow: isHighlighted ? `0 0 0 3px ${colors.header}, 0 10px 40px rgba(0,0,0,0.2)` : '0 2px 8px rgba(0,0,0,0.08)',
             border: `1px solid ${isHighlighted ? colors.header : '#e2e8f0'}`,
-            fontSize: '12px',
+            fontSize: '11px',
             overflow: 'hidden',
             transition: 'box-shadow 0.15s, border-color 0.15s',
             zIndex: isDragging ? 1000 : (isHighlighted ? 100 : 1)
@@ -363,17 +520,17 @@
             style={{
               background: colors.header,
               color: 'white',
-              padding: '10px 12px',
+              padding: '8px 10px',
               fontWeight: '600',
-              fontSize: '12px',
+              fontSize: '11px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               cursor: isDragging ? 'grabbing' : 'grab',
               userSelect: 'none'
             }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <rect x="3" y="3" width="18" height="18" rx="2"/>
               <line x1="3" y1="9" x2="21" y2="9"/>
             </svg>
@@ -384,22 +541,22 @@
               const isHighlightedCol = highlightedCols?.includes(col.name);
               return (
                 <div key={col.name} style={{
-                  padding: '6px 12px',
+                  padding: '4px 8px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '5px',
                   background: isHighlightedCol ? colors.light : (i % 2 === 0 ? '#fafafa' : '#ffffff'),
-                  borderLeft: isHighlightedCol ? `4px solid ${colors.header}` : '4px solid transparent'
+                  borderLeft: isHighlightedCol ? `3px solid ${colors.header}` : '3px solid transparent'
                 }}>
-                  <span style={{ width: '18px', display: 'flex', justifyContent: 'center' }}>
-                    {col.isPK && <span style={{ fontSize: '12px' }}>🔑</span>}
-                    {col.isFK && !col.isPK && <span style={{ color: '#8b5cf6', fontSize: '14px', fontWeight: 'bold' }}>›</span>}
-                    {col.isUnique && !col.isPK && <span style={{ color: '#10b981', fontSize: '10px' }}>◉</span>}
+                  <span style={{ width: '14px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                    {col.isPK && <span style={{ fontSize: '10px' }}>🔑</span>}
+                    {col.isFK && !col.isPK && <span style={{ color: '#8b5cf6', fontSize: '11px', fontWeight: 'bold' }}>›</span>}
+                    {col.isUnique && !col.isPK && <span style={{ color: '#10b981', fontSize: '8px' }}>◉</span>}
                   </span>
-                  <span style={{ flex: 1, fontWeight: col.isPK ? '600' : '400', color: '#1e293b', fontFamily: 'monospace', fontSize: '11px' }}>
+                  <span style={{ flex: 1, fontWeight: col.isPK ? '600' : '400', color: '#1e293b', fontFamily: 'monospace', fontSize: '10px' }}>
                     {col.name}
                   </span>
-                  <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '10px' }}>{col.type}</span>
+                  <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '9px', flexShrink: 0 }}>{col.type}</span>
                 </div>
               );
             })}
@@ -411,7 +568,7 @@
     const App = () => {
       const [positions, setPositions] = useState(initialPositions);
       const [hoveredTable, setHoveredTable] = useState(null);
-      const [scale, setScale] = useState(0.75);
+      const [scale, setScale] = useState(0.6);
       const [showTenantLinks, setShowTenantLinks] = useState(true);
       const [showDomainLinks, setShowDomainLinks] = useState(true);
 
@@ -427,7 +584,6 @@
         return pos.y + HEADER_HEIGHT + colIndex * ROW_HEIGHT + ROW_HEIGHT / 2;
       }, [positions]);
 
-      // Generate connection path and arrow
       const getConnection = useCallback((rel, index) => {
         const fromPos = positions[rel.from];
         const toPos = positions[rel.to];
@@ -439,55 +595,41 @@
         const toLeft = toPos.x;
         const toRight = toPos.x + TABLE_WIDTH;
         
-        // Determine best sides to connect
         let startX, startY, endX, endY;
         let pathPoints = [];
-        let arrowDirection; // 'left', 'right', 'up', 'down'
+        let arrowDirection;
         
         const offset = (index % 6) * 8;
         
-        // Case 1: Target is to the RIGHT of source
         if (toLeft > fromRight + 20) {
           startX = fromRight;
           startY = fromY;
           endX = toLeft;
           endY = toY;
           arrowDirection = 'right';
-          
           const midX = startX + (endX - startX) / 2 + offset;
           if (Math.abs(startY - endY) < 3) {
             pathPoints = [[startX, startY], [endX, endY]];
           } else {
             pathPoints = [[startX, startY], [midX, startY], [midX, endY], [endX, endY]];
           }
-        }
-        // Case 2: Target is to the LEFT of source
-        else if (fromLeft > toRight + 20) {
+        } else if (fromLeft > toRight + 20) {
           startX = fromLeft;
           startY = fromY;
           endX = toRight;
           endY = toY;
           arrowDirection = 'left';
-          
           const midX = endX + (startX - endX) / 2 - offset;
           if (Math.abs(startY - endY) < 3) {
             pathPoints = [[startX, startY], [endX, endY]];
           } else {
             pathPoints = [[startX, startY], [midX, startY], [midX, endY], [endX, endY]];
           }
-        }
-        // Case 3: Tables overlap horizontally - route around
-        else {
+        } else {
           const fromCenterX = fromPos.x + TABLE_WIDTH / 2;
-          const toCenterX = toPos.x + TABLE_WIDTH / 2;
-          const fromBottom = fromPos.y + getTableHeight(rel.from);
-          const toBottom = toPos.y + getTableHeight(rel.to);
-          
-          // Decide to go left or right based on which side has more space
           const goRight = fromCenterX < 1000;
           
           if (goRight) {
-            // Exit from right, route around right side
             const routeX = Math.max(fromRight, toRight) + 30 + offset;
             startX = fromRight;
             startY = fromY;
@@ -496,7 +638,6 @@
             arrowDirection = 'left';
             pathPoints = [[startX, startY], [routeX, startY], [routeX, endY], [endX, endY]];
           } else {
-            // Exit from left, route around left side
             const routeX = Math.min(fromLeft, toLeft) - 30 - offset;
             startX = fromLeft;
             startY = fromY;
@@ -507,26 +648,21 @@
           }
         }
         
-        // Build path string
         let pathD = `M ${pathPoints[0][0]} ${pathPoints[0][1]}`;
         for (let i = 1; i < pathPoints.length; i++) {
           pathD += ` L ${pathPoints[i][0]} ${pathPoints[i][1]}`;
         }
         
-        // Arrow points - tip touches the table edge exactly
         const arrowSize = 8;
         let arrowPoints;
-        
         if (arrowDirection === 'right') {
-          // Arrow pointing right (into left side of table)
           arrowPoints = `${endX},${endY} ${endX - arrowSize},${endY - arrowSize/1.5} ${endX - arrowSize},${endY + arrowSize/1.5}`;
         } else {
-          // Arrow pointing left (into right side of table)
           arrowPoints = `${endX},${endY} ${endX + arrowSize},${endY - arrowSize/1.5} ${endX + arrowSize},${endY + arrowSize/1.5}`;
         }
         
         return { pathD, startX, startY, endX, endY, arrowPoints };
-      }, [positions, getColY, getTableHeight]);
+      }, [positions, getColY]);
 
       const activeRels = hoveredTable 
         ? relationships.filter(r => r.from === hoveredTable || r.to === hoveredTable)
@@ -545,6 +681,9 @@
         return true;
       });
 
+      // Count total columns
+      const totalColumns = Object.values(tables).reduce((sum, t) => sum + t.columns.length, 0);
+
       return (
         <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#f8fafc' }}>
           {/* Header */}
@@ -556,7 +695,7 @@
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <h1 style={{ fontSize: '15px', fontWeight: '600', color: '#1e293b' }}>📊 Database Schema ERD</h1>
               <span style={{ fontSize: '10px', color: '#64748b', background: '#f1f5f9', padding: '3px 8px', borderRadius: '4px' }}>
-                {Object.keys(tables).length} tables • {filteredRelationships.length} connections
+                {Object.keys(tables).length} tables • {totalColumns} columns • {filteredRelationships.length} relationships
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -577,7 +716,7 @@
                 Reset
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <button onClick={() => setScale(s => Math.max(0.3, s - 0.1))} style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>−</button>
+                <button onClick={() => setScale(s => Math.max(0.2, s - 0.1))} style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>−</button>
                 <span style={{ fontSize: '10px', color: '#64748b', minWidth: '36px', textAlign: 'center' }}>{Math.round(scale * 100)}%</span>
                 <button onClick={() => setScale(s => Math.min(1.5, s + 0.1))} style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer' }}>+</button>
               </div>
@@ -586,7 +725,7 @@
 
           {/* Canvas */}
           <div style={{ marginTop: '44px', width: '100%', height: 'calc(100vh - 44px)', overflow: 'auto' }}>
-            <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'relative', width: '2000px', height: '1300px', background: '#f8fafc' }}>
+            <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'relative', width: '2400px', height: '1500px', background: '#f8fafc' }}>
               
               {/* SVG Connections */}
               <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
@@ -600,17 +739,8 @@
                   
                   return (
                     <g key={`${rel.from}-${rel.fromCol}-${rel.to}`} style={{ opacity: isVisible ? 1 : 0.1 }}>
-                      {/* Connection line */}
-                      <path
-                        d={conn.pathD}
-                        fill="none"
-                        stroke={color}
-                        strokeWidth={strokeWidth}
-                        strokeDasharray={isTenant && !isActive ? '5,3' : 'none'}
-                      />
-                      {/* Start circle (FK) */}
+                      <path d={conn.pathD} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={isTenant && !isActive ? '5,3' : 'none'} />
                       <circle cx={conn.startX} cy={conn.startY} r={isActive ? 5 : 4} fill={color} />
-                      {/* End arrow (PK) - pointing INTO the table */}
                       <polygon points={conn.arrowPoints} fill={color} />
                     </g>
                   );
