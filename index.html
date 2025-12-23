@@ -296,25 +296,34 @@
       }
     };
 
-    // ALL relationships
+    // ALL relationships including organization_id and site_id
     const relationships = [
+      // Core hierarchy
       { from: 'sites', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'users', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'users', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'users', fromCol: 'role_id', to: 'roles', toCol: 'id', type: 'domain' },
       { from: 'user_organizations', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'user_sites', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
+      
+      // RBAC
       { from: 'role_permissions', fromCol: 'role_id', to: 'roles', toCol: 'id', type: 'domain' },
+      
+      // Chat - tenant + domain
       { from: 'chat_sessions', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'chat_sessions', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'chat_sessions', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'chat_messages', fromCol: 'session_id', to: 'chat_sessions', toCol: 'id', type: 'domain' },
       { from: 'chat_messages', fromCol: 'query_id', to: 'sql_queries', toCol: 'id', type: 'domain' },
       { from: 'chat_messages', fromCol: 'widget_id', to: 'widgets', toCol: 'id', type: 'domain' },
+      
+      // Database - tenant + domain
       { from: 'database_connections', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'database_connections', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'database_connections', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'database_table_access', fromCol: 'connection_id', to: 'database_connections', toCol: 'id', type: 'domain' },
+      
+      // Query - tenant + domain
       { from: 'contexts', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'contexts', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'contexts', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
@@ -330,6 +339,8 @@
       { from: 'sql_usage_metrics', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'sql_usage_metrics', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'sql_usage_metrics', fromCol: 'user_id', to: 'users', toCol: 'id', type: 'domain' },
+      
+      // Dashboard - tenant + domain
       { from: 'dashboards', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'dashboards', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'dashboards', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
@@ -342,11 +353,15 @@
       { from: 'dashboard_widgets', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'dashboard_widgets', fromCol: 'dashboard_id', to: 'dashboards', toCol: 'id', type: 'domain' },
       { from: 'dashboard_widgets', fromCol: 'widget_id', to: 'widgets', toCol: 'id', type: 'domain' },
+      
+      // Playlist - tenant + domain
       { from: 'playlists', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'playlists', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'playlists', fromCol: 'created_by', to: 'users', toCol: 'id', type: 'domain' },
       { from: 'playlist_dashboards', fromCol: 'playlist_id', to: 'playlists', toCol: 'id', type: 'domain' },
       { from: 'playlist_dashboards', fromCol: 'dashboard_id', to: 'dashboards', toCol: 'id', type: 'domain' },
+      
+      // AI - tenant + domain
       { from: 'llm_configurations', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
       { from: 'llm_configurations', fromCol: 'site_id', to: 'sites', toCol: 'id', type: 'tenant' },
       { from: 'schema_vector_stores', fromCol: 'organization_id', to: 'organizations', toCol: 'id', type: 'tenant' },
@@ -355,29 +370,45 @@
       { from: 'schema_vectors', fromCol: 'vector_store_id', to: 'schema_vector_stores', toCol: 'id', type: 'domain' },
     ];
 
+    // Positions optimized for showing all connections - organizations/sites at center-top
     const initialPositions = {
+      // Hub tables at top center
       organizations: { x: 700, y: 60 },
       sites: { x: 950, y: 60 },
+      
+      // Users and related
       users: { x: 1200, y: 60 },
       roles: { x: 1450, y: 60 },
       role_permissions: { x: 1700, y: 60 },
       user_organizations: { x: 700, y: 280 },
       user_sites: { x: 950, y: 280 },
+      
+      // Chat (right side)
       chat_sessions: { x: 1450, y: 280 },
       chat_messages: { x: 1700, y: 280 },
+      
+      // Database (left side)
       database_connections: { x: 60, y: 280 },
       database_table_access: { x: 60, y: 520 },
+      
+      // Query system (center)
       contexts: { x: 300, y: 280 },
       context_chunks: { x: 300, y: 520 },
       sql_queries: { x: 540, y: 520 },
       sql_query_attempts: { x: 300, y: 760 },
       sql_query_feedback: { x: 540, y: 760 },
       sql_usage_metrics: { x: 780, y: 760 },
+      
+      // Dashboard (center-right)
       dashboards: { x: 1020, y: 520 },
       widgets: { x: 1260, y: 520 },
       dashboard_widgets: { x: 1140, y: 760 },
+      
+      // Playlist (right)
       playlists: { x: 1500, y: 520 },
       playlist_dashboards: { x: 1380, y: 760 },
+      
+      // AI (bottom-left)
       llm_configurations: { x: 60, y: 760 },
       schema_vector_stores: { x: 60, y: 980 },
       schema_vectors: { x: 300, y: 980 },
@@ -402,10 +433,16 @@
 
       useEffect(() => {
         if (!isDragging) return;
+        
         const handleMouseMove = (e) => {
-          onDrag(name, { x: Math.max(0, e.clientX - dragStart.x), y: Math.max(0, e.clientY - dragStart.y) });
+          onDrag(name, { 
+            x: Math.max(0, e.clientX - dragStart.x), 
+            y: Math.max(0, e.clientY - dragStart.y) 
+          });
         };
+        
         const handleMouseUp = () => setIsDragging(false);
+        
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
         return () => {
@@ -479,10 +516,20 @@
                     {col.isFK && !col.isPK && <span style={{ color: '#8b5cf6', fontSize: '14px', fontWeight: 'bold' }}>›</span>}
                     {col.isUnique && !col.isPK && <span style={{ color: '#10b981', fontSize: '10px' }}>◉</span>}
                   </span>
-                  <span style={{ flex: 1, fontWeight: col.isPK ? '600' : '400', color: '#1e293b', fontFamily: 'monospace', fontSize: '11px' }}>
+                  <span style={{ 
+                    flex: 1, 
+                    fontWeight: col.isPK ? '600' : '400', 
+                    color: '#1e293b',
+                    fontFamily: 'monospace',
+                    fontSize: '11px'
+                  }}>
                     {col.name}
                   </span>
-                  <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '10px' }}>
+                  <span style={{ 
+                    color: '#94a3b8', 
+                    fontFamily: 'monospace',
+                    fontSize: '10px'
+                  }}>
                     {col.type}
                   </span>
                 </div>
@@ -490,25 +537,6 @@
             })}
           </div>
         </div>
-      );
-    };
-
-    // Custom arrow component that draws correctly at line end
-    const ConnectionArrow = ({ x, y, angle, color, size = 10 }) => {
-      // Draw arrow pointing in the direction of the line (INTO the target)
-      const rad = (angle * Math.PI) / 180;
-      const p1x = x;
-      const p1y = y;
-      const p2x = x - size * Math.cos(rad - Math.PI / 6);
-      const p2y = y - size * Math.sin(rad - Math.PI / 6);
-      const p3x = x - size * Math.cos(rad + Math.PI / 6);
-      const p3y = y - size * Math.sin(rad + Math.PI / 6);
-      
-      return (
-        <polygon 
-          points={`${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`} 
-          fill={color}
-        />
       );
     };
 
@@ -527,7 +555,14 @@
         const pos = positions[tableName];
         const table = tables[tableName];
         const height = HEADER_HEIGHT + table.columns.length * ROW_HEIGHT;
-        return { left: pos.x, right: pos.x + TABLE_WIDTH, top: pos.y, bottom: pos.y + height, centerX: pos.x + TABLE_WIDTH / 2, centerY: pos.y + height / 2 };
+        return {
+          left: pos.x,
+          right: pos.x + TABLE_WIDTH,
+          top: pos.y,
+          bottom: pos.y + height,
+          centerX: pos.x + TABLE_WIDTH / 2,
+          centerY: pos.y + height / 2
+        };
       }, [positions]);
 
       const getColY = useCallback((tableName, colName) => {
@@ -537,87 +572,48 @@
         return pos.y + HEADER_HEIGHT + colIndex * ROW_HEIGHT + ROW_HEIGHT / 2;
       }, [positions]);
 
-      // Improved routing that returns path segments and endpoint info
       const routeConnection = useCallback((fromTable, fromCol, toTable, toCol, index) => {
         const fromBounds = getTableBounds(fromTable);
         const toBounds = getTableBounds(toTable);
         const fromY = getColY(fromTable, fromCol);
         const toY = getColY(toTable, toCol);
         
-        let fromX, toX, fromSide, toSide;
+        let fromX, toX;
         const horizontalGap = toBounds.left - fromBounds.right;
         const reverseGap = fromBounds.left - toBounds.right;
         
         if (horizontalGap > 30) {
           fromX = fromBounds.right;
           toX = toBounds.left;
-          fromSide = 'right';
-          toSide = 'left';
         } else if (reverseGap > 30) {
           fromX = fromBounds.left;
           toX = toBounds.right;
-          fromSide = 'left';
-          toSide = 'right';
         } else {
           if (fromBounds.centerX < toBounds.centerX) {
             fromX = fromBounds.right;
-            toX = toBounds.right + 25;
-            fromSide = 'right';
-            toSide = 'right';
+            toX = toBounds.right + 20;
           } else {
             fromX = fromBounds.left;
-            toX = toBounds.left - 25;
-            fromSide = 'left';
-            toSide = 'left';
+            toX = toBounds.left - 20;
           }
         }
         
         const offset = (index % 8) * 6;
         let path;
-        let lastSegmentAngle; // Angle of the final segment approaching the target
-        let arrowX, arrowY; // Position for arrow (slightly before the end)
         
-        const arrowOffset = 2; // How far back from the end point to place the arrow tip
-        
-        if (fromSide !== toSide) {
-          // Going across (left-to-right or right-to-left)
+        if (Math.abs(fromX - toX) > 30) {
           const midX = fromX + (toX - fromX) / 2 + offset;
-          
           if (Math.abs(fromY - toY) < 5) {
-            // Horizontal line
             path = `M ${fromX} ${fromY} L ${toX} ${toY}`;
-            lastSegmentAngle = toX > fromX ? 0 : 180;
-            arrowX = toX > fromX ? toX - arrowOffset : toX + arrowOffset;
-            arrowY = toY;
           } else {
-            // Orthogonal with bend
             path = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
-            lastSegmentAngle = toX > midX ? 0 : 180;
-            arrowX = toX > midX ? toX - arrowOffset : toX + arrowOffset;
-            arrowY = toY;
           }
         } else {
-          // Same side - need to go around
-          const outX = fromSide === 'right' 
-            ? Math.max(fromBounds.right, toBounds.right) + 30 + offset 
-            : Math.min(fromBounds.left, toBounds.left) - 30 - offset;
-          
+          const outX = fromX > toX ? Math.max(fromBounds.right, toBounds.right) + 25 + offset : Math.min(fromBounds.left, toBounds.left) - 25 - offset;
           path = `M ${fromX} ${fromY} L ${outX} ${fromY} L ${outX} ${toY} L ${toX} ${toY}`;
-          
-          // Arrow direction based on which side we're approaching from
-          if (toSide === 'right') {
-            // Coming from the right, arrow points left (into table)
-            lastSegmentAngle = 180;
-            arrowX = toX + arrowOffset;
-          } else {
-            // Coming from the left, arrow points right (into table)
-            lastSegmentAngle = 0;
-            arrowX = toX - arrowOffset;
-          }
-          arrowY = toY;
         }
         
-        return { path, fromX, fromY, toX, toY, arrowX, arrowY, lastSegmentAngle };
+        return { path, fromX, fromY, toX, toY };
       }, [getTableBounds, getColY]);
 
       const activeRels = hoveredTable 
@@ -664,14 +660,25 @@
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {/* Connection type toggles */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#64748b' }}>
-                  <input type="checkbox" checked={showTenantLinks} onChange={(e) => setShowTenantLinks(e.target.checked)} style={{ cursor: 'pointer' }}/>
+                  <input 
+                    type="checkbox" 
+                    checked={showTenantLinks} 
+                    onChange={(e) => setShowTenantLinks(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
                   <span style={{ display: 'inline-block', width: '10px', height: '3px', background: '#f97316', borderRadius: '2px' }}></span>
                   Tenant (org/site)
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#64748b' }}>
-                  <input type="checkbox" checked={showDomainLinks} onChange={(e) => setShowDomainLinks(e.target.checked)} style={{ cursor: 'pointer' }}/>
+                  <input 
+                    type="checkbox" 
+                    checked={showDomainLinks} 
+                    onChange={(e) => setShowDomainLinks(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
                   <span style={{ display: 'inline-block', width: '10px', height: '3px', background: '#3b82f6', borderRadius: '2px' }}></span>
                   Domain
                 </label>
@@ -682,22 +689,76 @@
                 <span style={{ color: '#8b5cf6' }}>› FK</span>
               </div>
               <div style={{ height: '20px', width: '1px', background: '#e2e8f0' }} />
-              <button onClick={resetPositions} style={{ padding: '5px 10px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '10px', color: '#64748b' }}>
+              <button 
+                onClick={resetPositions}
+                style={{ padding: '5px 10px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '10px', color: '#64748b' }}
+              >
                 Reset Layout
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <button onClick={() => setScale(s => Math.max(0.3, s - 0.1))} style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '14px' }}>−</button>
+                <button 
+                  onClick={() => setScale(s => Math.max(0.3, s - 0.1))} 
+                  style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '14px' }}
+                >−</button>
                 <span style={{ fontSize: '10px', color: '#64748b', minWidth: '36px', textAlign: 'center' }}>{Math.round(scale * 100)}%</span>
-                <button onClick={() => setScale(s => Math.min(1.5, s + 0.1))} style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '14px' }}>+</button>
+                <button 
+                  onClick={() => setScale(s => Math.min(1.5, s + 0.1))} 
+                  style={{ width: '26px', height: '26px', border: '1px solid #e2e8f0', borderRadius: '5px', background: 'white', cursor: 'pointer', fontSize: '14px' }}
+                >+</button>
               </div>
             </div>
           </div>
 
           {/* Canvas */}
-          <div style={{ marginTop: '44px', width: '100%', height: 'calc(100vh - 44px)', overflow: 'auto', position: 'relative' }}>
-            <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', position: 'relative', width: '2000px', height: '1300px', background: '#f8fafc' }}>
+          <div style={{ 
+            marginTop: '44px',
+            width: '100%', 
+            height: 'calc(100vh - 44px)', 
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            <div style={{ 
+              transform: `scale(${scale})`, 
+              transformOrigin: 'top left',
+              position: 'relative',
+              width: '2000px',
+              height: '1300px',
+              background: '#f8fafc'
+            }}>
               {/* SVG for connections */}
-              <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
+              <svg style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                width: '100%', 
+                height: '100%', 
+                pointerEvents: 'none',
+                zIndex: 0
+              }}>
+                <defs>
+                  {/* Arrows for tenant connections (orange) */}
+                  <marker id="arrow-tenant" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <path d="M 0 0 L 10 4 L 0 8 L 2 4 Z" fill="#f97316" />
+                  </marker>
+                  <marker id="arrow-tenant-dim" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <path d="M 0 0 L 10 4 L 0 8 L 2 4 Z" fill="#fdba74" />
+                  </marker>
+                  <marker id="circle-tenant" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <circle cx="4" cy="4" r="3" fill="#f97316" />
+                  </marker>
+                  
+                  {/* Arrows for domain connections (blue) */}
+                  <marker id="arrow-domain" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <path d="M 0 0 L 10 4 L 0 8 L 2 4 Z" fill="#3b82f6" />
+                  </marker>
+                  <marker id="arrow-domain-dim" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <path d="M 0 0 L 10 4 L 0 8 L 2 4 Z" fill="#93c5fd" />
+                  </marker>
+                  <marker id="circle-domain" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                    <circle cx="4" cy="4" r="3" fill="#3b82f6" />
+                  </marker>
+                </defs>
+                
                 {filteredRelationships.map((rel, index) => {
                   const isActive = hoveredTable ? activeRels.includes(rel) : false;
                   const isVisible = !hoveredTable || isActive;
@@ -708,33 +769,22 @@
                     ? (isActive ? '#f97316' : '#fdba74')
                     : (isActive ? '#3b82f6' : '#93c5fd');
                   
-                  const strokeWidth = isActive ? 2 : 1.5;
-                  const arrowSize = isActive ? 10 : 8;
+                  const arrowId = isTenant 
+                    ? (isActive ? 'arrow-tenant' : 'arrow-tenant-dim')
+                    : (isActive ? 'arrow-domain' : 'arrow-domain-dim');
+                  
+                  const circleId = isTenant ? 'circle-tenant' : 'circle-domain';
                   
                   return (
-                    <g key={`${rel.from}-${rel.fromCol}-${rel.to}-${rel.toCol}`} style={{ opacity: isVisible ? 1 : 0.12, transition: 'opacity 0.15s' }}>
-                      {/* Main line */}
+                    <g key={`${rel.from}-${rel.fromCol}-${rel.to}-${rel.toCol}`} style={{ opacity: isVisible ? 1 : 0.15, transition: 'opacity 0.15s' }}>
                       <path
                         d={route.path}
                         fill="none"
                         stroke={color}
-                        strokeWidth={strokeWidth}
+                        strokeWidth={isActive ? 2.5 : 1.5}
                         strokeDasharray={isTenant && !isActive ? '4,3' : 'none'}
-                      />
-                      {/* Circle at FK end (start) */}
-                      <circle
-                        cx={route.fromX}
-                        cy={route.fromY}
-                        r={isActive ? 4 : 3}
-                        fill={color}
-                      />
-                      {/* Arrow at PK end (pointing INTO the table) */}
-                      <ConnectionArrow
-                        x={route.arrowX}
-                        y={route.arrowY}
-                        angle={route.lastSegmentAngle}
-                        color={color}
-                        size={arrowSize}
+                        markerStart={isActive ? `url(#${circleId})` : ''}
+                        markerEnd={`url(#${arrowId})`}
                       />
                     </g>
                   );
@@ -783,25 +833,14 @@
               ))}
             </div>
             <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '6px', paddingTop: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                <svg width="40" height="12">
-                  <line x1="0" y1="6" x2="30" y2="6" stroke="#f97316" strokeWidth="2" strokeDasharray="4,3"/>
-                  <circle cx="4" cy="6" r="3" fill="#f97316"/>
-                  <polygon points="35,6 28,2 28,10" fill="#f97316"/>
-                </svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                <span style={{ display: 'inline-block', width: '16px', height: '2px', background: '#f97316' }}></span>
                 <span style={{ color: '#64748b' }}>Tenant (org_id / site_id)</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <svg width="40" height="12">
-                  <line x1="0" y1="6" x2="30" y2="6" stroke="#3b82f6" strokeWidth="2"/>
-                  <circle cx="4" cy="6" r="3" fill="#3b82f6"/>
-                  <polygon points="35,6 28,2 28,10" fill="#3b82f6"/>
-                </svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ display: 'inline-block', width: '16px', height: '2px', background: '#3b82f6' }}></span>
                 <span style={{ color: '#64748b' }}>Domain relationships</span>
               </div>
-            </div>
-            <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '6px', paddingTop: '6px', fontSize: '8px', color: '#94a3b8' }}>
-              ● = FK (source) → ▶ = PK (target)
             </div>
           </div>
 
@@ -819,7 +858,7 @@
             color: '#64748b',
             zIndex: 999
           }}>
-            💡 <strong>Drag</strong> tables to rearrange • <strong>Hover</strong> to highlight connections • ● FK → ▶ PK
+            💡 <strong>Drag</strong> tables to rearrange • <strong>Hover</strong> to highlight connections • <strong>Toggle</strong> connection types above
           </div>
         </div>
       );
